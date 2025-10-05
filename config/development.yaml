@@ -1,0 +1,29 @@
+# Development Configuration
+debug: true
+log_level: DEBUG
+database_url: sqlite:///./cost_optimizer_dev.db
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+
+cloud_providers:
+  aws:
+    region: "ap-south-1"
+    cost_explorer_enabled: true
+  azure:
+    enabled: false
+  gcp:
+    enabled: false
+
+features:
+  cost_analysis: true
+  optimization: true
+  recommendations: true
+  automation: false  # Disabled in dev
+
+indian_market:
+  currency: "INR"
+  timezone: "Asia/Kolkata"
+  language: "en-IN"

@@ -1,0 +1,62 @@
+# India Market Configuration
+market:
+  region: "India"
+  currency: "INR"
+  timezone: "Asia/Kolkata"
+  language: "en-IN"
+
+pricing:
+  sme_tiers:
+    - name: "Starter"
+      monthly_fee: 8000  # INR
+      max_annual_spend: 8000000  # 80L INR
+    - name: "Growth" 
+      monthly_fee: 15000  # INR
+      max_annual_spend: 20000000  # 2Cr INR
+    - name: "Scale"
+      monthly_fee: 25000  # INR
+      max_annual_spend: 40000000  # 4Cr INR
+
+  enterprise:
+    percentage_fee: 1.5  # 1.5% vs competitors' 2.5%
+    performance_bonus: 0.5  # Additional 0.5% for >30% savings
+
+  freemium:
+    max_monthly_spend: 800000  # 8L INR
+
+compliance:
+  data_protection: "PDPA"
+  financial_regulation: "RBI"
+  data_residency: true
+  sovereign_cloud: true
+
+cloud_providers:
+  primary:
+    - "AWS"
+    - "Azure" 
+    - "GCP"
+  indian:
+    - "E2E Networks"
+    - "CtrlS Datacenters"
+
+industry_focus:
+  - "Fintech"
+  - "E-commerce"
+  - "EdTech" 
+  - "Healthcare"
+  - "Manufacturing"
+
+seasonal_patterns:
+  festivals:
+    - "Diwali"
+    - "Dussehra"
+    - "Holi"
+  events:
+    - "IPL"
+    - "Elections"
+    - "Monsoon"
+
+payment_gateways:
+  - "Razorpay"
+  - "CCAvenue"
+  - "PayU"

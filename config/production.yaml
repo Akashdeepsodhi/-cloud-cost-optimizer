@@ -1,0 +1,34 @@
+# Production Configuration
+debug: false
+log_level: INFO
+database_url: ${DATABASE_URL}
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+
+cloud_providers:
+  aws:
+    region: "ap-south-1"
+    cost_explorer_enabled: true
+  azure:
+    enabled: true
+  gcp:
+    enabled: true
+
+features:
+  cost_analysis: true
+  optimization: true
+  recommendations: true
+  automation: true
+
+indian_market:
+  currency: "INR"
+  timezone: "Asia/Kolkata"
+  language: "en-IN"
+
+security:
+  cors_origins:
+    - "https://*.in"
+    - "https://*.co.in"
