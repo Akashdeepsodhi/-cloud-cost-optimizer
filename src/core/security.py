@@ -14,9 +14,19 @@ settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
+MAX_BCRYPT_PASSWORD_BYTES = 72
 
 
 def get_password_hash(password: str) -> str:
+    # bcrypt has a 72-byte input limit. Enforce it explicitly to provide a clear error.
+    if isinstance(password, str):
+        pw_bytes = password.encode("utf-8")
+    else:
+        pw_bytes = bytes(password)
+    if len(pw_bytes) > MAX_BCRYPT_PASSWORD_BYTES:
+        raise ValueError(
+            f"Password too long for bcrypt (max {MAX_BCRYPT_PASSWORD_BYTES} bytes)."
+        )
     return pwd_context.hash(password)
 
 

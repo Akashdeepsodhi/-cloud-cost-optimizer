@@ -15,7 +15,7 @@ google-auth==2.25.2
 
 # Data Processing
 pandas==2.1.4
-numpy==1.25.2
+numpy==1.26.4
 asyncio-mqtt==0.16.1
 
 # Database
@@ -45,3 +45,9 @@ mypy==1.7.1
 # Deployment
 gunicorn==21.2.0
 python-dotenv==1.0.0
+
+# Postgres driver
+psycopg2-binary==2.9.7
+
+# bcrypt pinned for passlib compatibility
+bcrypt==3.2.2
