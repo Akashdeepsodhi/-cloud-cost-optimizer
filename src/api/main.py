@@ -154,7 +154,14 @@ def register(
   existing = db.query(User).filter(User.email == email).first()
   if existing:
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
-  user = User(email=email, full_name=full_name, hashed_password=get_password_hash(password))
+  # Hash the password; passlib/bcrypt will raise ValueError for >72-byte inputs.
+  # Convert that into a clear HTTP 400 so it doesn't surface as a 500.
+  try:
+    hashed = get_password_hash(password)
+  except ValueError as ve:
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
+
+  user = User(email=email, full_name=full_name, hashed_password=hashed)
   db.add(user)
   db.commit()
   response = RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)

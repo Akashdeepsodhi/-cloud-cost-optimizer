@@ -31,6 +31,15 @@ def get_password_hash(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    # Ensure we don't pass passwords longer than bcrypt's 72-byte limit to passlib
+    if isinstance(plain_password, str):
+        pw_bytes = plain_password.encode("utf-8")
+    else:
+        pw_bytes = bytes(plain_password)
+    if len(pw_bytes) > MAX_BCRYPT_PASSWORD_BYTES:
+        raise ValueError(
+            f"Password too long for bcrypt (max {MAX_BCRYPT_PASSWORD_BYTES} bytes)."
+        )
     return pwd_context.verify(plain_password, hashed_password)
 
 
