@@ -3,6 +3,7 @@ Main FastAPI application for Cloud Cost Optimizer
 """
 from fastapi import FastAPI, HTTPException
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response, status
+from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -13,13 +14,15 @@ from sqlalchemy.orm import Session
 
 from src.api.deps import COOKIE_NAME, get_current_user
 from src.core.database import Base, engine, get_db
-from src.core.security import create_access_token, get_password_hash, verify_password
+from src.core.security import create_access_token, get_password_hash, verify_password, decode_access_token
 from src.models.user import User
 
 app = FastAPI(
-    title="Cloud Cost Optimizer - India",
-    description="Cloud cost optimization platform for the Indian market",
-    version="1.0.0"
+  title="Cloud Cost Optimizer - India",
+  description="Cloud cost optimization platform for the Indian market",
+  version="1.0.0",
+  docs_url=None,
+  redoc_url=None,
 )
 
 # Create tables on startup
@@ -37,18 +40,28 @@ app.add_middleware(
 )
 
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request = None):
-  return """
+async def root(request: Request, db: Session = Depends(get_db)):
+  # Show 'Dashboard' link only when user is authenticated
+  token = request.cookies.get(COOKIE_NAME)
+  logged_in = False
+  if token:
+    payload = decode_access_token(token)
+    if payload and "sub" in payload:
+      user = db.query(User).filter(User.email == payload["sub"]).first()
+      if user:
+        logged_in = True
+
+  return f"""
   <html>
     <head>
       <title>Cloud Cost Optimizer - India</title>
       <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: #FF6B35; }
-        .links { text-align: center; margin-top: 30px; }
-        .links a { margin: 0 10px; padding: 12px 24px; background: #FF6B35; color: white; text-decoration: none; border-radius: 5px; }
+        body {{ font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }}
+        .container {{ max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; }}
+        .header {{ text-align: center; margin-bottom: 30px; }}
+        .header h1 {{ color: #FF6B35; }}
+        .links {{ text-align: center; margin-top: 30px; }}
+        .links a {{ margin: 0 10px; padding: 12px 24px; background: #FF6B35; color: white; text-decoration: none; border-radius: 5px; }}
       </style>
     </head>
     <body>
@@ -58,11 +71,8 @@ async def root(request: Request = None):
           <p>Optimize your cloud spend for the Indian market.</p>
         </div>
         <div class="links">
-          <a href="/docs">API Documentation</a>
-          <a href="/api/v1/health">Health Check</a>
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>
-          <a href="/dashboard">Dashboard</a>
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
         </div>
       </div>
     </body>
@@ -109,6 +119,7 @@ async def register_form():
 # --- Simple API endpoints required by tests ---
 @app.get("/api/v1/health")
 async def health_check():
+  """Public health check."""
   return {"status": "healthy", "market": "India", "currency": "INR"}
 
 
@@ -131,6 +142,17 @@ async def get_indian_pricing():
       {"name": "premium", "price_per_unit_inr": 2.5},
     ],
   }
+
+
+# Auth-protected API docs
+@app.get("/docs", response_class=HTMLResponse)
+def protected_swagger_ui(user: User = Depends(get_current_user)):
+  """Serve Swagger UI only to authenticated users."""
+  return get_swagger_ui_html(openapi_url=app.openapi_url, title=f"{app.title} - Docs")
+
+@app.get("/docs/oauth2-redirect", include_in_schema=False)
+def swagger_oauth2_redirect(user: User = Depends(get_current_user)):
+  return get_swagger_ui_oauth2_redirect_html()
 
 
 @app.post("/register")
@@ -262,6 +284,10 @@ def dashboard(user: User = Depends(get_current_user)):
           </div>
           <p>Welcome to your dashboard.</p>
           <p>Check the <a href="/api/v1/summary">cost summary API</a>.</p>
+          <p>
+            <a class="btn" href="/api/v1/health">Health Check</a>
+            <a class="btn" href="/docs">API Documentation</a>
+          </p>
         </div>
       </body>
     </html>
